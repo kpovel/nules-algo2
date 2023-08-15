@@ -28,6 +28,12 @@ fn test_sort_methods() {
         let insertion_end = Instant::now();
         show_res("Insertion", n, insertion_end - insertion_start);
 
+        let mut std_arr: Vec<u32> = (0..n).rev().collect();
+        let std_start = Instant::now();
+        std_arr.sort();
+        let std_end = Instant::now();
+        show_res("Std", n, std_end - std_start);
+
         println!();
     }
 
@@ -49,6 +55,13 @@ fn test_sort_methods() {
         insertion_sort(&mut insertion_arr);
         let insertion_end = Instant::now();
         show_res("Insertion float", n, insertion_end - insertion_start);
+
+        let mut std_arr: Vec<f64> = (0..n).map(|x| x as f64).rev().collect();
+        let std_start = Instant::now();
+        std_arr.sort_by(|a, b| a.partial_cmp(b).unwrap());
+        let std_end = Instant::now();
+        show_res("Std", n, std_end - std_start);
+
 
         println!();
     }
