@@ -25,8 +25,11 @@ pub fn merge_sort(vec: &mut [u32]) -> SortAnalysis {
     }
 
     let mid = vec.len() / 2;
-    merge_sort(&mut vec[..mid]);
-    merge_sort(&mut vec[mid..]);
+    let left_analysis = merge_sort(&mut vec[..mid]);
+    let right_analysis = merge_sort(&mut vec[mid..]);
+
+    analysis.compare += left_analysis.compare + right_analysis.compare;
+    analysis.swap += left_analysis.swap + right_analysis.swap;
 
     let mut merged: Vec<u32> = Vec::new();
     merged.extend_from_slice(vec);
@@ -35,8 +38,9 @@ pub fn merge_sort(vec: &mut [u32]) -> SortAnalysis {
     let mut j = mid;
     let mut k = 0;
 
-    analysis.compare += 1;
     while i < mid && j < vec.len() {
+        analysis.compare += 1;
+
         if vec[i] < vec[j] {
             merged[k] = vec[i];
             i += 1;
@@ -46,7 +50,6 @@ pub fn merge_sort(vec: &mut [u32]) -> SortAnalysis {
         }
         k += 1;
 
-        analysis.compare += 1;
         analysis.swap += 1;
     }
 
@@ -55,7 +58,6 @@ pub fn merge_sort(vec: &mut [u32]) -> SortAnalysis {
         i += 1;
         k += 1;
 
-        analysis.compare += 1;
         analysis.swap += 1;
     }
 
@@ -64,7 +66,6 @@ pub fn merge_sort(vec: &mut [u32]) -> SortAnalysis {
         j += 1;
         k += 1;
 
-        analysis.compare += 1;
         analysis.swap += 1;
     }
 
