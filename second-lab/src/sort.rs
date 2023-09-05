@@ -11,13 +11,21 @@ impl SortAnalysis {
             sort_method, self.arr_len, self.compare, self.swap
         );
     }
+
+    pub fn compare(&self) -> u32 {
+        return self.compare;
+    }
+
+    pub fn swap(&self) -> u32 {
+        return self.swap;
+    }
 }
 
 pub fn merge_sort(vec: &mut [u32]) -> SortAnalysis {
     let mut analysis = SortAnalysis {
         compare: 0,
         swap: 0,
-        arr_len: vec.len(),
+        arr_len: 244,
     };
 
     if vec.len() < 2 {
