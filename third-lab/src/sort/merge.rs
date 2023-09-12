@@ -42,3 +42,43 @@ fn merge(left: &Vec<f64>, right: &Vec<f64>) -> Vec<f64> {
 
     merged
 }
+
+#[cfg(test)]
+mod merge_sort {
+    use crate::generate_arr;
+
+    use super::merge_sort;
+
+    #[test]
+    fn worst() {
+        let worst_arr = generate_arr(&crate::SortCase::WorstAsymptotic, 100_000);
+        let mut worst_sorted = worst_arr.clone();
+        worst_sorted.sort_by(|a, b| a.partial_cmp(b).unwrap());
+
+        let merge_sorted = merge_sort(&worst_arr);
+
+        assert_eq!(merge_sorted, worst_sorted);
+    }
+
+    #[test]
+    fn random() {
+        let random_arr = generate_arr(&crate::SortCase::Random, 100_000);
+        let mut random_sorted = random_arr.clone();
+        random_sorted.sort_by(|a, b| a.partial_cmp(b).unwrap());
+
+        let merge_sorted = merge_sort(&random_arr);
+
+        assert_eq!(merge_sorted, random_sorted);
+    }
+
+    #[test]
+    fn best() {
+        let best_arr = generate_arr(&crate::SortCase::BestAsymptotic, 100_000);
+        let mut best_sorted = best_arr.clone();
+        best_sorted.sort_by(|a, b| a.partial_cmp(b).unwrap());
+
+        let merge_sorted = merge_sort(&best_arr);
+
+        assert_eq!(merge_sorted, best_sorted);
+    }
+}
