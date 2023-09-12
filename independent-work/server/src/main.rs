@@ -1,6 +1,6 @@
 use actix_web::{get, web, App, HttpServer, Responder, Result};
 use serde::{Deserialize, Serialize};
-use sort::{bubble_sort, insertion_sort, merge_sort, selection_sort};
+use sort::{bubble_sort, insertion_sort, merge_sort, quick_sort, selection_sort};
 use std::time::{Duration, Instant};
 
 mod sort;
@@ -81,6 +81,23 @@ async fn selection(input: web::Path<InputSort>) -> Result<impl Responder> {
     Ok(web::Json(results))
 }
 
+#[get("/quicksort/{qty}")]
+async fn quicksort(input: web::Path<InputSort>) -> Result<impl Responder> {
+    let mut vec = (0..input.qty).rev().collect::<Vec<u32>>();
+    let vec_len = vec.len();
+    let start = Instant::now();
+    quick_sort(&mut vec, 0, vec_len as isize - 1);
+    let end = Instant::now();
+
+    let result = SortResults {
+        method: String::from("Quicksort"),
+        qty: input.qty,
+        sort_time: end - start,
+    };
+
+    Ok(web::Json(result))
+}
+
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
     HttpServer::new(|| {
@@ -89,7 +106,8 @@ async fn main() -> std::io::Result<()> {
                 .service(bubble)
                 .service(insertion)
                 .service(selection)
-                .service(merge),
+                .service(merge)
+                .service(quicksort),
         )
     })
     .bind(("127.0.0.1", 6969))?
