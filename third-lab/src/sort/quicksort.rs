@@ -1,27 +1,26 @@
 use rand::Rng;
 
-pub fn quick_sort<T: std::cmp::PartialOrd>(arr: &mut Vec<T>, low: isize, high: isize) {
-    if low < high {
-        let partition_idx = partition(arr, low, high);
-        quick_sort(arr, low, partition_idx - 1);
-        quick_sort(arr, partition_idx + 1, high);
+pub fn quick_sort<T: std::cmp::PartialOrd>(arr: &mut Vec<T>, left: isize, right: isize) {
+    if left < right {
+        let partition_idx = partition(arr, left, right);
+        quick_sort(arr, left, partition_idx - 1);
+        quick_sort(arr, partition_idx + 1, right);
     }
 }
 
-fn partition<T: std::cmp::PartialOrd>(arr: &mut [T], low: isize, high: isize) -> isize {
-    let pivot_index = rand::thread_rng().gen_range(low..=high) as usize;
-    arr.swap(pivot_index, high as usize);
+fn partition<T: std::cmp::PartialOrd>(arr: &mut [T], left: isize, right: isize) -> isize {
+    let pivot_index = rand::thread_rng().gen_range(left..=right) as usize;
+    arr.swap(pivot_index, right as usize);
 
-    let pivot = high;
-    let mut i: isize = low - 1;
+    let mut i: isize = left - 1;
 
-    for j in low..high {
-        if arr[j as usize] <= arr[pivot as usize] {
+    for j in left..right {
+        if arr[j as usize] <= arr[right as usize] {
             i += 1;
             arr.swap(i as usize, j as usize);
         }
     }
-    arr.swap((i + 1) as usize, pivot as usize);
+    arr.swap((i + 1) as usize, right as usize);
     i + 1
 }
 

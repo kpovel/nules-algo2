@@ -76,7 +76,7 @@ fn generate_arr(sort_case: &SortCase, vec_len: u32) -> Vec<f64> {
 
 fn show_res(sort_method: &str, len: usize, duration: Duration) {
     println!(
-        "\t{} sorted array with {} elements by {:?}",
+        "\t{} sorted array with {} elements in {:?}",
         sort_method, len, duration
     );
 }
