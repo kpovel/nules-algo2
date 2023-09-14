@@ -22,6 +22,7 @@
     {/each}
   </nav>
 </header>
-<main>
+
+<main class="p-4">
   <slot />
 </main>
