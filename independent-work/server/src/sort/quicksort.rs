@@ -1,6 +1,6 @@
 use rand::Rng;
 
-pub fn quick_sort<T: std::cmp::PartialOrd>(arr: &mut Vec<T>, left: isize, right: isize) {
+pub fn quick_sort<T: PartialOrd>(arr: &mut Vec<T>, left: usize, right: usize) {
     if left < right {
         let partition_idx = partition(arr, left, right);
         quick_sort(arr, left, partition_idx - 1);
@@ -8,19 +8,18 @@ pub fn quick_sort<T: std::cmp::PartialOrd>(arr: &mut Vec<T>, left: isize, right:
     }
 }
 
-fn partition<T: std::cmp::PartialOrd>(arr: &mut [T], left: isize, right: isize) -> isize {
-    let pivot_index = rand::thread_rng().gen_range(left..=right) as usize;
-    arr.swap(pivot_index, right as usize);
+fn partition<T: PartialOrd>(arr: &mut [T], left: usize, right: usize) -> usize {
+    let pivot_index = rand::thread_rng().gen_range(left..=right);
+    arr.swap(pivot_index, right);
 
-    let mut i: isize = left - 1;
+    let mut i = left - 1;
 
     for j in left..right {
-        if arr[j as usize] <= arr[right as usize] {
+        if arr[j] <= arr[right] {
             i += 1;
-            arr.swap(i as usize, j as usize);
+            arr.swap(i, j);
         }
     }
-    arr.swap((i + 1) as usize, right as usize);
+    arr.swap(i + 1, right);
     i + 1
 }
-

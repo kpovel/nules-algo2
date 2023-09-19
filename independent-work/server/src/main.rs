@@ -86,7 +86,7 @@ async fn quicksort(input: web::Path<InputSort>) -> Result<impl Responder> {
     let mut vec = (0..input.qty).rev().collect::<Vec<u32>>();
     let vec_len = vec.len();
     let start = Instant::now();
-    quick_sort(&mut vec, 0, vec_len as isize - 1);
+    quick_sort(&mut vec, 1, vec_len - 1);
     let end = Instant::now();
 
     let result = SortResults {
@@ -107,7 +107,7 @@ async fn main() -> std::io::Result<()> {
                 .service(insertion)
                 .service(selection)
                 .service(merge)
-                .service(quicksort),
+                .service(quicksort)
         )
     })
     .bind(("127.0.0.1", 6969))?
