@@ -1,6 +1,6 @@
-use actix_web::{get, web, App, HttpServer, Responder, Result};
+use actix_web::{post, web, App, HttpServer, Responder, Result};
 use serde::{Deserialize, Serialize};
-use sort::{bubble_sort, insertion_sort, merge_sort, quick_sort, selection_sort};
+use sort::{bubble_sort, generate_vec, insertion_sort, merge_sort, quick_sort, selection_sort};
 use std::time::{Duration, Instant};
 
 mod sort;
@@ -12,86 +12,99 @@ struct SortResults {
     sort_time: Duration,
 }
 
-#[derive(Deserialize)]
-struct InputSort {
-    qty: u32,
+#[derive(Deserialize, Debug)]
+pub enum VecType {
+    Sorted,
+    Random,
+    ReverceSorted,
 }
 
-#[get("/bubble/{qty}")]
-async fn bubble(input: web::Path<InputSort>) -> Result<impl Responder> {
-    let mut vec = (0..input.qty).rev().collect::<Vec<u32>>();
+#[derive(Deserialize, Debug)]
+struct SortBody {
+    qty: u32,
+    vec_type: VecType,
+}
+
+#[post("/bubble")]
+async fn bubble(body: web::Json<SortBody>) -> Result<impl Responder> {
+    let mut vec = generate_vec(&body.vec_type, body.qty as usize);
+
     let start = Instant::now();
     bubble_sort(&mut vec);
     let end = Instant::now();
 
-    let results = SortResults {
+    let result = SortResults {
         method: String::from("Bubble sort"),
-        qty: input.qty,
+        qty: body.qty,
         sort_time: end - start,
     };
 
-    Ok(web::Json(results))
+    Ok(web::Json(result))
 }
 
-#[get("/insertion/{qty}")]
-async fn insertion(input: web::Path<InputSort>) -> Result<impl Responder> {
-    let mut vec = (0..input.qty).rev().collect::<Vec<u32>>();
+#[post("/insertion")]
+async fn insertion(body: web::Json<SortBody>) -> Result<impl Responder> {
+    let mut vec = generate_vec(&body.vec_type, body.qty as usize);
+
     let start = Instant::now();
     insertion_sort(&mut vec);
     let end = Instant::now();
 
-    let results = SortResults {
+    let result = SortResults {
         method: String::from("Insertion sort"),
-        qty: input.qty,
+        qty: body.qty,
         sort_time: end - start,
     };
 
-    Ok(web::Json(results))
+    Ok(web::Json(result))
 }
 
-#[get("/merge/{qty}")]
-async fn merge(input: web::Path<InputSort>) -> Result<impl Responder> {
-    let mut vec = (0..input.qty).rev().collect::<Vec<u32>>();
+#[post("/merge")]
+async fn merge(body: web::Json<SortBody>) -> Result<impl Responder> {
+    let mut vec = generate_vec(&body.vec_type, body.qty as usize);
+
     let start = Instant::now();
     merge_sort(&mut vec);
     let end = Instant::now();
 
-    let results = SortResults {
+    let result = SortResults {
         method: String::from("Merge sort"),
-        qty: input.qty,
+        qty: body.qty,
         sort_time: end - start,
     };
 
-    Ok(web::Json(results))
+    Ok(web::Json(result))
 }
 
-#[get("/selection/{qty}")]
-async fn selection(input: web::Path<InputSort>) -> Result<impl Responder> {
-    let mut vec = (0..input.qty).rev().collect::<Vec<u32>>();
+#[post("/selection")]
+async fn selection(body: web::Json<SortBody>) -> Result<impl Responder> {
+    let mut vec = generate_vec(&body.vec_type, body.qty as usize);
+
     let start = Instant::now();
     selection_sort(&mut vec);
     let end = Instant::now();
 
-    let results = SortResults {
+    let result = SortResults {
         method: String::from("Selection sort"),
-        qty: input.qty,
+        qty: body.qty,
         sort_time: end - start,
     };
 
-    Ok(web::Json(results))
+    Ok(web::Json(result))
 }
 
-#[get("/quicksort/{qty}")]
-async fn quicksort(input: web::Path<InputSort>) -> Result<impl Responder> {
-    let mut vec = (0..input.qty).rev().collect::<Vec<u32>>();
+#[post("/quicksort")]
+async fn quicksort(body: web::Json<SortBody>) -> Result<impl Responder> {
+    let mut vec = generate_vec(&body.vec_type, body.qty as usize);
     let vec_len = vec.len();
+
     let start = Instant::now();
     quick_sort(&mut vec, 1, vec_len - 1);
     let end = Instant::now();
 
     let result = SortResults {
         method: String::from("Quicksort"),
-        qty: input.qty,
+        qty: body.qty,
         sort_time: end - start,
     };
 
@@ -107,7 +120,7 @@ async fn main() -> std::io::Result<()> {
                 .service(insertion)
                 .service(selection)
                 .service(merge)
-                .service(quicksort)
+                .service(quicksort),
         )
     })
     .bind(("127.0.0.1", 6969))?

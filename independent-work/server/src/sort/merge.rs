@@ -1,4 +1,4 @@
-pub fn merge_sort(vec: &Vec<u32>) -> Vec<u32> {
+pub fn merge_sort<T: Copy + PartialOrd>(vec: &Vec<T>) -> Vec<T> {
     if vec.len() < 2 {
         vec.to_vec()
     } else {
@@ -11,10 +11,10 @@ pub fn merge_sort(vec: &Vec<u32>) -> Vec<u32> {
     }
 }
 
-fn merge(left: &Vec<u32>, right: &Vec<u32>) -> Vec<u32> {
+fn merge<T: Copy + PartialOrd>(left: &Vec<T>, right: &Vec<T>) -> Vec<T> {
     let mut i = 0;
     let mut j = 0;
-    let mut merged: Vec<u32> = Vec::new();
+    let mut merged: Vec<T> = Vec::new();
 
     while i < left.len() && j < right.len() {
         if left[i] < right[j] {
