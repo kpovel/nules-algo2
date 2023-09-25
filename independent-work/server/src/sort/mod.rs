@@ -13,6 +13,12 @@ pub use {
     selection::selection_sort,
 };
 
+pub struct SortStats {
+    pub compare: u32,
+    pub swap: u32,
+    pub memory_usage: usize,
+}
+
 pub fn generate_vec(vec_type: &VecType, len: usize) -> Vec<f64> {
     match vec_type {
         VecType::Sorted => (0..len).map(|x| x as f64).collect(),

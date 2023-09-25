@@ -12,6 +12,16 @@ struct SortResults {
     sort_time: Duration,
 }
 
+#[derive(Serialize)]
+struct SortStatsResult {
+    method: String,
+    qty: u32,
+    sort_time: Duration,
+    compare: u32,
+    swap: u32,
+    memory_usage: usize,
+}
+
 #[derive(Deserialize, Debug)]
 pub enum VecType {
     Sorted,
@@ -47,13 +57,16 @@ async fn insertion(body: web::Json<SortBody>) -> Result<impl Responder> {
     let mut vec = generate_vec(&body.vec_type, body.qty as usize);
 
     let start = Instant::now();
-    insertion_sort(&mut vec);
+    let stats = insertion_sort(&mut vec);
     let end = Instant::now();
 
-    let result = SortResults {
+    let result = SortStatsResult {
         method: String::from("Insertion sort"),
         qty: body.qty,
         sort_time: end - start,
+        swap: stats.swap,
+        compare: stats.compare,
+        memory_usage: stats.memory_usage
     };
 
     Ok(web::Json(result))
@@ -64,13 +77,16 @@ async fn merge(body: web::Json<SortBody>) -> Result<impl Responder> {
     let mut vec = generate_vec(&body.vec_type, body.qty as usize);
 
     let start = Instant::now();
-    merge_sort(&mut vec);
+    let stats = merge_sort(&mut vec).1;
     let end = Instant::now();
 
-    let result = SortResults {
+    let result = SortStatsResult {
         method: String::from("Merge sort"),
         qty: body.qty,
         sort_time: end - start,
+        swap: stats.swap,
+        compare: stats.compare,
+        memory_usage: stats.memory_usage
     };
 
     Ok(web::Json(result))
@@ -113,6 +129,8 @@ async fn quicksort(body: web::Json<SortBody>) -> Result<impl Responder> {
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
+    // todo: add writing to a db results
+
     HttpServer::new(|| {
         App::new().service(
             web::scope("/sort")
