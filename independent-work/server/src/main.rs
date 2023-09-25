@@ -8,6 +8,7 @@ mod sort;
 #[derive(Serialize)]
 struct SortResults {
     method: String,
+    init_sort: InitSort,
     qty: u32,
     sort_time: Duration,
 }
@@ -15,6 +16,7 @@ struct SortResults {
 #[derive(Serialize)]
 struct SortStatsResult {
     method: String,
+    init_sort: InitSort,
     qty: u32,
     sort_time: Duration,
     compare: u32,
@@ -22,8 +24,8 @@ struct SortStatsResult {
     memory_usage: usize,
 }
 
-#[derive(Deserialize, Debug)]
-pub enum VecType {
+#[derive(Serialize, Deserialize, Debug, Copy, Clone)]
+pub enum InitSort {
     Sorted,
     Random,
     ReverceSorted,
@@ -32,12 +34,12 @@ pub enum VecType {
 #[derive(Deserialize, Debug)]
 struct SortBody {
     qty: u32,
-    vec_type: VecType,
+    init_sort: InitSort,
 }
 
 #[post("/bubble")]
 async fn bubble(body: web::Json<SortBody>) -> Result<impl Responder> {
-    let mut vec = generate_vec(&body.vec_type, body.qty as usize);
+    let mut vec = generate_vec(&body.init_sort, body.qty as usize);
 
     let start = Instant::now();
     bubble_sort(&mut vec);
@@ -45,6 +47,7 @@ async fn bubble(body: web::Json<SortBody>) -> Result<impl Responder> {
 
     let result = SortResults {
         method: String::from("Bubble sort"),
+        init_sort: body.init_sort,
         qty: body.qty,
         sort_time: end - start,
     };
@@ -54,7 +57,7 @@ async fn bubble(body: web::Json<SortBody>) -> Result<impl Responder> {
 
 #[post("/insertion")]
 async fn insertion(body: web::Json<SortBody>) -> Result<impl Responder> {
-    let mut vec = generate_vec(&body.vec_type, body.qty as usize);
+    let mut vec = generate_vec(&body.init_sort, body.qty as usize);
 
     let start = Instant::now();
     let stats = insertion_sort(&mut vec);
@@ -62,11 +65,12 @@ async fn insertion(body: web::Json<SortBody>) -> Result<impl Responder> {
 
     let result = SortStatsResult {
         method: String::from("Insertion sort"),
+        init_sort: body.init_sort,
         qty: body.qty,
         sort_time: end - start,
         swap: stats.swap,
         compare: stats.compare,
-        memory_usage: stats.memory_usage
+        memory_usage: stats.memory_usage,
     };
 
     Ok(web::Json(result))
@@ -74,7 +78,7 @@ async fn insertion(body: web::Json<SortBody>) -> Result<impl Responder> {
 
 #[post("/merge")]
 async fn merge(body: web::Json<SortBody>) -> Result<impl Responder> {
-    let mut vec = generate_vec(&body.vec_type, body.qty as usize);
+    let mut vec = generate_vec(&body.init_sort, body.qty as usize);
 
     let start = Instant::now();
     let stats = merge_sort(&mut vec).1;
@@ -82,11 +86,12 @@ async fn merge(body: web::Json<SortBody>) -> Result<impl Responder> {
 
     let result = SortStatsResult {
         method: String::from("Merge sort"),
+        init_sort: body.init_sort,
         qty: body.qty,
         sort_time: end - start,
         swap: stats.swap,
         compare: stats.compare,
-        memory_usage: stats.memory_usage
+        memory_usage: stats.memory_usage,
     };
 
     Ok(web::Json(result))
@@ -94,13 +99,14 @@ async fn merge(body: web::Json<SortBody>) -> Result<impl Responder> {
 
 #[post("/selection")]
 async fn selection(body: web::Json<SortBody>) -> Result<impl Responder> {
-    let mut vec = generate_vec(&body.vec_type, body.qty as usize);
+    let mut vec = generate_vec(&body.init_sort, body.qty as usize);
 
     let start = Instant::now();
     selection_sort(&mut vec);
     let end = Instant::now();
 
     let result = SortResults {
+        init_sort: body.init_sort,
         method: String::from("Selection sort"),
         qty: body.qty,
         sort_time: end - start,
@@ -111,7 +117,7 @@ async fn selection(body: web::Json<SortBody>) -> Result<impl Responder> {
 
 #[post("/quicksort")]
 async fn quicksort(body: web::Json<SortBody>) -> Result<impl Responder> {
-    let mut vec = generate_vec(&body.vec_type, body.qty as usize);
+    let mut vec = generate_vec(&body.init_sort, body.qty as usize);
     let vec_len = vec.len();
 
     let start = Instant::now();
@@ -120,6 +126,7 @@ async fn quicksort(body: web::Json<SortBody>) -> Result<impl Responder> {
 
     let result = SortResults {
         method: String::from("Quicksort"),
+        init_sort: body.init_sort,
         qty: body.qty,
         sort_time: end - start,
     };

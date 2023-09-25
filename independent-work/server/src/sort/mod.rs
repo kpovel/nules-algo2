@@ -1,6 +1,6 @@
 use rand::Rng;
 
-use super::VecType;
+use super::InitSort;
 
 mod bubble;
 mod insertion;
@@ -19,10 +19,10 @@ pub struct SortStats {
     pub memory_usage: usize,
 }
 
-pub fn generate_vec(vec_type: &VecType, len: usize) -> Vec<f64> {
+pub fn generate_vec(vec_type: &InitSort, len: usize) -> Vec<f64> {
     match vec_type {
-        VecType::Sorted => (0..len).map(|x| x as f64).collect(),
-        VecType::Random => {
+        InitSort::Sorted => (0..len).map(|x| x as f64).collect(),
+        InitSort::Random => {
             let mut vec: Vec<f64> = vec![];
 
             for _ in 0..len {
@@ -32,6 +32,6 @@ pub fn generate_vec(vec_type: &VecType, len: usize) -> Vec<f64> {
 
             return vec;
         },
-        VecType::ReverceSorted => (0..len).map(|x| x as f64).rev().collect(),
+        InitSort::ReverceSorted => (0..len).map(|x| x as f64).rev().collect(),
     }
 }
