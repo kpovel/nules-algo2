@@ -1,12 +1,13 @@
 use actix_web::{post, web, App, HttpResponse, HttpServer};
 use anyhow::Result;
+use insert::{insert_results, insert_stats};
 use libsql_client::{Client, Config};
 use serde::{Deserialize, Serialize};
 use sort::{bubble_sort, generate_vec, insertion_sort, merge_sort, quick_sort, selection_sort};
 use std::sync::Mutex;
 use std::time::{Duration, Instant};
 
-mod configure;
+mod insert;
 mod sort;
 
 struct AppState {
@@ -14,7 +15,7 @@ struct AppState {
 }
 
 #[derive(Serialize)]
-struct SortResults {
+pub struct SortResults {
     method: String,
     init_sort: InitSort,
     qty: u32,
@@ -22,7 +23,7 @@ struct SortResults {
 }
 
 #[derive(Serialize)]
-struct SortStatsResult {
+pub struct SortStatsResult {
     method: String,
     init_sort: InitSort,
     qty: u32,
@@ -46,8 +47,8 @@ struct SortBody {
 }
 
 #[post("/bubble")]
-async fn bubble(body: web::Json<SortBody>) -> HttpResponse {
-    let mut vec = generate_vec(&body.init_sort, body.qty as usize);
+async fn bubble(data: web::Data<AppState>, req: web::Json<SortBody>) -> HttpResponse {
+    let mut vec = generate_vec(&req.init_sort, req.qty as usize);
 
     let start = Instant::now();
     bubble_sort(&mut vec);
@@ -55,17 +56,19 @@ async fn bubble(body: web::Json<SortBody>) -> HttpResponse {
 
     let result = SortResults {
         method: String::from("Bubble sort"),
-        init_sort: body.init_sort,
-        qty: body.qty,
+        init_sort: req.init_sort,
+        qty: req.qty,
         sort_time: end - start,
     };
+
+    insert_results(&mut data.client.lock().unwrap(), &result).await;
 
     return HttpResponse::Ok().json(result);
 }
 
 #[post("/insertion")]
-async fn insertion(body: web::Json<SortBody>) -> HttpResponse {
-    let mut vec = generate_vec(&body.init_sort, body.qty as usize);
+async fn insertion(data: web::Data<AppState>, req: web::Json<SortBody>) -> HttpResponse {
+    let mut vec = generate_vec(&req.init_sort, req.qty as usize);
 
     let start = Instant::now();
     let stats = insertion_sort(&mut vec);
@@ -73,20 +76,22 @@ async fn insertion(body: web::Json<SortBody>) -> HttpResponse {
 
     let result = SortStatsResult {
         method: String::from("Insertion sort"),
-        init_sort: body.init_sort,
-        qty: body.qty,
+        init_sort: req.init_sort,
+        qty: req.qty,
         sort_time: end - start,
         swap: stats.swap,
         compare: stats.compare,
         memory_usage: stats.memory_usage,
     };
 
+    insert_stats(&mut data.client.lock().unwrap(), &result).await;
+
     return HttpResponse::Ok().json(result);
 }
 
 #[post("/merge")]
-async fn merge(body: web::Json<SortBody>) -> HttpResponse {
-    let mut vec = generate_vec(&body.init_sort, body.qty as usize);
+async fn merge(data: web::Data<AppState>, req: web::Json<SortBody>) -> HttpResponse {
+    let mut vec = generate_vec(&req.init_sort, req.qty as usize);
 
     let start = Instant::now();
     let stats = merge_sort(&mut vec).1;
@@ -94,38 +99,42 @@ async fn merge(body: web::Json<SortBody>) -> HttpResponse {
 
     let result = SortStatsResult {
         method: String::from("Merge sort"),
-        init_sort: body.init_sort,
-        qty: body.qty,
+        init_sort: req.init_sort,
+        qty: req.qty,
         sort_time: end - start,
         swap: stats.swap,
         compare: stats.compare,
         memory_usage: stats.memory_usage,
     };
 
+    insert_stats(&mut data.client.lock().unwrap(), &result).await;
+
     return HttpResponse::Ok().json(result);
 }
 
 #[post("/selection")]
-async fn selection(body: web::Json<SortBody>) -> HttpResponse {
-    let mut vec = generate_vec(&body.init_sort, body.qty as usize);
+async fn selection(data: web::Data<AppState>, req: web::Json<SortBody>) -> HttpResponse {
+    let mut vec = generate_vec(&req.init_sort, req.qty as usize);
 
     let start = Instant::now();
     selection_sort(&mut vec);
     let end = Instant::now();
 
     let result = SortResults {
-        init_sort: body.init_sort,
+        init_sort: req.init_sort,
         method: String::from("Selection sort"),
-        qty: body.qty,
+        qty: req.qty,
         sort_time: end - start,
     };
+
+    insert_results(&mut data.client.lock().unwrap(), &result).await;
 
     return HttpResponse::Ok().json(result);
 }
 
 #[post("/quicksort")]
-async fn quicksort(body: web::Json<SortBody>) -> HttpResponse {
-    let mut vec = generate_vec(&body.init_sort, body.qty as usize);
+async fn quicksort(data: web::Data<AppState>, req: web::Json<SortBody>) -> HttpResponse {
+    let mut vec = generate_vec(&req.init_sort, req.qty as usize);
     let vec_len = vec.len();
 
     let start = Instant::now();
@@ -134,10 +143,12 @@ async fn quicksort(body: web::Json<SortBody>) -> HttpResponse {
 
     let result = SortResults {
         method: String::from("Quicksort"),
-        init_sort: body.init_sort,
-        qty: body.qty,
+        init_sort: req.init_sort,
+        qty: req.qty,
         sort_time: end - start,
     };
+
+    insert_results(&mut data.client.lock().unwrap(), &result).await;
 
     return HttpResponse::Ok().json(result);
 }
@@ -147,21 +158,35 @@ async fn main() -> Result<()> {
     let config = Config::new("file:///tmp/sortstats.db").unwrap();
     let client = Mutex::new(libsql_client::Client::from_config(config).await.unwrap());
 
-    client.lock().unwrap().execute("create table if not exists SortResult (
-        id int primary key autoincrement,
+    client
+        .lock()
+        .unwrap()
+        .execute(
+            "create table if not exists SortResult (
+        id integer primary key autoincrement,
         method varchar(50) not null,
         init_sort varchar(50) not null,
         qty int not null,
         sort_time int not null
-    )").await.unwrap();
+    )",
+        )
+        .await
+        .unwrap();
 
-    client.lock().unwrap().execute("create table if not exists SortStats (
+    client
+        .lock()
+        .unwrap()
+        .execute(
+            "create table if not exists SortStats (
         id integer primary key autoincrement,
         result_id int not null,
         compare int not null,
         swap int not null,
         memory_usage int not null
-    )").await.unwrap();
+    )",
+        )
+        .await
+        .unwrap();
 
     let app_state = web::Data::new(AppState { client });
 
@@ -169,8 +194,8 @@ async fn main() -> Result<()> {
         App::new().service(
             web::scope("/sort")
                 .app_data(app_state.clone())
-                .service(insertion)
                 .service(bubble)
+                .service(insertion)
                 .service(selection)
                 .service(merge)
                 .service(quicksort),
