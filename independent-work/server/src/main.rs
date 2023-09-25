@@ -1,9 +1,17 @@
-use actix_web::{post, web, App, HttpServer, Responder, Result};
+use actix_web::{post, web, App, HttpResponse, HttpServer};
+use anyhow::Result;
+use libsql_client::{Client, Config};
 use serde::{Deserialize, Serialize};
 use sort::{bubble_sort, generate_vec, insertion_sort, merge_sort, quick_sort, selection_sort};
+use std::sync::Mutex;
 use std::time::{Duration, Instant};
 
+mod configure;
 mod sort;
+
+struct AppState {
+    client: Mutex<Client>,
+}
 
 #[derive(Serialize)]
 struct SortResults {
@@ -38,7 +46,7 @@ struct SortBody {
 }
 
 #[post("/bubble")]
-async fn bubble(body: web::Json<SortBody>) -> Result<impl Responder> {
+async fn bubble(body: web::Json<SortBody>) -> HttpResponse {
     let mut vec = generate_vec(&body.init_sort, body.qty as usize);
 
     let start = Instant::now();
@@ -52,11 +60,11 @@ async fn bubble(body: web::Json<SortBody>) -> Result<impl Responder> {
         sort_time: end - start,
     };
 
-    Ok(web::Json(result))
+    return HttpResponse::Ok().json(result);
 }
 
 #[post("/insertion")]
-async fn insertion(body: web::Json<SortBody>) -> Result<impl Responder> {
+async fn insertion(body: web::Json<SortBody>) -> HttpResponse {
     let mut vec = generate_vec(&body.init_sort, body.qty as usize);
 
     let start = Instant::now();
@@ -73,11 +81,11 @@ async fn insertion(body: web::Json<SortBody>) -> Result<impl Responder> {
         memory_usage: stats.memory_usage,
     };
 
-    Ok(web::Json(result))
+    return HttpResponse::Ok().json(result);
 }
 
 #[post("/merge")]
-async fn merge(body: web::Json<SortBody>) -> Result<impl Responder> {
+async fn merge(body: web::Json<SortBody>) -> HttpResponse {
     let mut vec = generate_vec(&body.init_sort, body.qty as usize);
 
     let start = Instant::now();
@@ -94,11 +102,11 @@ async fn merge(body: web::Json<SortBody>) -> Result<impl Responder> {
         memory_usage: stats.memory_usage,
     };
 
-    Ok(web::Json(result))
+    return HttpResponse::Ok().json(result);
 }
 
 #[post("/selection")]
-async fn selection(body: web::Json<SortBody>) -> Result<impl Responder> {
+async fn selection(body: web::Json<SortBody>) -> HttpResponse {
     let mut vec = generate_vec(&body.init_sort, body.qty as usize);
 
     let start = Instant::now();
@@ -112,11 +120,11 @@ async fn selection(body: web::Json<SortBody>) -> Result<impl Responder> {
         sort_time: end - start,
     };
 
-    Ok(web::Json(result))
+    return HttpResponse::Ok().json(result);
 }
 
 #[post("/quicksort")]
-async fn quicksort(body: web::Json<SortBody>) -> Result<impl Responder> {
+async fn quicksort(body: web::Json<SortBody>) -> HttpResponse {
     let mut vec = generate_vec(&body.init_sort, body.qty as usize);
     let vec_len = vec.len();
 
@@ -131,18 +139,38 @@ async fn quicksort(body: web::Json<SortBody>) -> Result<impl Responder> {
         sort_time: end - start,
     };
 
-    Ok(web::Json(result))
+    return HttpResponse::Ok().json(result);
 }
 
 #[actix_web::main]
-async fn main() -> std::io::Result<()> {
-    // todo: add writing to a db results
+async fn main() -> Result<()> {
+    let config = Config::new("file:///tmp/sortstats.db").unwrap();
+    let client = Mutex::new(libsql_client::Client::from_config(config).await.unwrap());
 
-    HttpServer::new(|| {
+    client.lock().unwrap().execute("create table if not exists SortResult (
+        id int primary key autoincrement,
+        method varchar(50) not null,
+        init_sort varchar(50) not null,
+        qty int not null,
+        sort_time int not null
+    )").await.unwrap();
+
+    client.lock().unwrap().execute("create table if not exists SortStats (
+        id integer primary key autoincrement,
+        result_id int not null,
+        compare int not null,
+        swap int not null,
+        memory_usage int not null
+    )").await.unwrap();
+
+    let app_state = web::Data::new(AppState { client });
+
+    HttpServer::new(move || {
         App::new().service(
             web::scope("/sort")
-                .service(bubble)
+                .app_data(app_state.clone())
                 .service(insertion)
+                .service(bubble)
                 .service(selection)
                 .service(merge)
                 .service(quicksort),
@@ -150,5 +178,7 @@ async fn main() -> std::io::Result<()> {
     })
     .bind(("127.0.0.1", 6969))?
     .run()
-    .await
+    .await?;
+
+    return Ok(());
 }
