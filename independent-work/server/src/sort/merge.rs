@@ -20,7 +20,7 @@ pub fn merge_sort<T: Copy + PartialOrd>(vec: &Vec<T>) -> (Vec<T>, SortStats) {
         let total_stats = SortStats {
             compare: left_stats.compare + right_stats.compare + merge_compares,
             swap: left_stats.swap + right_stats.swap + 1,
-            memory_usage: vec.len(),
+            memory_usage: left_stats.memory_usage + right_stats.memory_usage + vec.len(),
         };
 
         (merged, total_stats)
