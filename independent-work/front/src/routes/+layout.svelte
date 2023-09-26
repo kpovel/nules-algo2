@@ -5,6 +5,7 @@
 
   const navLinks = [
     { path: "/", title: "Sort results" },
+    { path: "/sort-stats", title: "Sort stats" },
     { path: "/about-me", title: "About me" }
   ];
 </script>

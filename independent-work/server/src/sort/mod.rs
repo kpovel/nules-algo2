@@ -28,7 +28,6 @@ pub fn generate_vec(vec_type: &InitSort, len: usize) -> Vec<f64> {
             for _ in 0..len {
                 vec.push(rand::thread_rng().gen_range(0.0..len as f64));
             }
-            println!("{:?}", vec);
 
             return vec;
         },

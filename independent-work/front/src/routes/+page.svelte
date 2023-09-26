@@ -19,7 +19,13 @@
 >
   <label>
     Select number of elements:
-    <input type="number" name="nElements" required class="rounded-lg" />
+    <input type="number" name="qty" required class="rounded-lg" />
+    <select name="init_sort" required class="rounded-lg">
+      <option value="">--Please choose an option--</option>
+      <option value="Sorted">Sorted</option>
+      <option value="Random">Random</option>
+      <option value="ReverceSorted">ReverceSorted</option>
+    </select>
   </label>
   <button
     type="submit"
@@ -39,7 +45,7 @@
       Comparison table for {form.merge.qty} elements
     </div>
     <div
-      class="grid grid-cols-6 justify-center gap-5 rounded-lg bg-white p-5 text-center border"
+      class="grid grid-cols-6 justify-center gap-5 rounded-lg border bg-white p-5 text-center"
     >
       <div class="font-semibold">Sort method</div>
       {#each Object.entries(form) as [_, value]}
