@@ -45,7 +45,7 @@
       Comparison table for {form.merge.init_sort} array of {form.merge.qty} elements
     </div>
     <div
-      class="grid grid-cols-6 justify-center gap-5 rounded-lg border bg-white p-5 text-center"
+      class="grid grid-cols-3 justify-center gap-5 rounded-lg border bg-white p-5 text-center"
     >
       <div class="font-semibold">Sort method</div>
       {#each Object.entries(form) as [_, value]}
@@ -55,6 +55,24 @@
       {#each Object.entries(form) as [_, value]}
         <div class="font-light">
           {value.sort_time.secs}.{value.sort_time.nanos}
+        </div>
+      {/each}
+      <div class="font-semibold">Comparison</div>
+      {#each Object.entries(form) as [_, value]}
+        <div class="font-light">
+          {value.compare}
+        </div>
+      {/each}
+      <div class="font-semibold">Swaps</div>
+      {#each Object.entries(form) as [_, value]}
+        <div class="font-light">
+          {value.swap}
+        </div>
+      {/each}
+      <div class="font-semibold">Memory usage</div>
+      {#each Object.entries(form) as [_, value]}
+        <div class="font-light">
+          {value.memory_usage}
         </div>
       {/each}
     </div>
