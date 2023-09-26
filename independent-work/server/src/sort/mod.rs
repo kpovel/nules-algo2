@@ -31,6 +31,6 @@ pub fn generate_vec(vec_type: &InitSort, len: usize) -> Vec<f64> {
 
             return vec;
         },
-        InitSort::ReverceSorted => (0..len).map(|x| x as f64).rev().collect(),
+        InitSort::ReverseSorted => (0..len).map(|x| x as f64).rev().collect(),
     }
 }

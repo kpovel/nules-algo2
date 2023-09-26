@@ -37,7 +37,7 @@ pub struct SortStatsResult {
 pub enum InitSort {
     Sorted,
     Random,
-    ReverceSorted,
+    ReverseSorted,
 }
 
 #[derive(Deserialize, Debug)]

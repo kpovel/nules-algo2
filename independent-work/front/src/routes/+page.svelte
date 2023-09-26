@@ -24,7 +24,7 @@
       <option value="">--Please choose an option--</option>
       <option value="Sorted">Sorted</option>
       <option value="Random">Random</option>
-      <option value="ReverceSorted">ReverceSorted</option>
+      <option value="ReverseSorted">ReverseSorted</option>
     </select>
   </label>
   <button

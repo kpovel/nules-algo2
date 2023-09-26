@@ -23,5 +23,5 @@ export type SortStatsResult = {
 export enum InitSort {
   Sorted = "Sorted",
   Random = "Random",
-  ReverceSorted = "ReverceSorted"
+  ReverseSorted = "ReverseSorted"
 }
