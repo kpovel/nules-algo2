@@ -1,5 +1,6 @@
 use actix_web::{post, web, App, HttpResponse, HttpServer};
 use anyhow::Result;
+use history::load_history;
 use insert::{insert_results, insert_stats};
 use libsql_client::{Client, Config};
 use serde::{Deserialize, Serialize};
@@ -7,10 +8,11 @@ use sort::{bubble_sort, generate_vec, insertion_sort, merge_sort, quick_sort, se
 use std::sync::Mutex;
 use std::time::{Duration, Instant};
 
+mod history;
 mod insert;
 mod sort;
 
-struct AppState {
+pub struct AppState {
     client: Mutex<Client>,
 }
 
@@ -198,7 +200,8 @@ async fn main() -> Result<()> {
                 .service(insertion)
                 .service(selection)
                 .service(merge)
-                .service(quicksort),
+                .service(quicksort)
+                .service(load_history),
         )
     })
     .bind(("127.0.0.1", 6969))?

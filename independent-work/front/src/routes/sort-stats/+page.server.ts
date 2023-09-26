@@ -1,6 +1,6 @@
-import type {Actions} from "./$types";
-import {SERVER_URL} from "$env/static/private";
-import type {SortStatsResult} from "../types";
+import type { Actions } from "./$types";
+import { SERVER_URL } from "$env/static/private";
+import type { SortStatsResult } from "../types";
 
 export const actions = {
   sortTest: async ({ request }) => {
