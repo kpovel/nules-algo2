@@ -99,9 +99,10 @@ impl<'a> BinaryNode<'a> {
         }
     }
 
-    pub fn students_younger_than_20(&self, current_date: DateTime<Utc>) -> Vec<&Student> {
+    pub fn students_younger_than_20(&self) -> Vec<&Student> {
         let mut students = Vec::new();
 
+        let current_date = Utc::now();
         let age_years = current_date.year()
             - self.value.birthday.year()
             - if current_date.ordinal() < self.value.birthday.ordinal() {
@@ -115,10 +116,10 @@ impl<'a> BinaryNode<'a> {
         }
 
         if let Some(ref left) = self.left {
-            students.extend(left.students_younger_than_20(current_date));
+            students.extend(left.students_younger_than_20());
         }
         if let Some(ref right) = self.right {
-            students.extend(right.students_younger_than_20(current_date));
+            students.extend(right.students_younger_than_20());
         }
 
         students

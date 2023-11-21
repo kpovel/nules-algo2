@@ -25,10 +25,10 @@ fn main() {
     binary_tree_student.insert(Student {
         first_name: "third",
         last_name: "third",
-        birthday: Utc.with_ymd_and_hms(1968, 3, 3, 5, 6, 7).unwrap(),
+        birthday: Utc::now(),
     });
 
     binary_tree_student.print();
 
-    println!("Leaf nodes: {}", binary_tree_student.count_leaf_nodes());
+    println!(" {:?}", binary_tree_student.students_younger_than_20());
 }
